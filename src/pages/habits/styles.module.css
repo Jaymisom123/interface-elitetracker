@@ -1,0 +1,184 @@
+.container {
+  background-color: var(--black-blue);
+  width: 100vw;
+  height: 100vh;
+  color: var(--white);
+  font-family: "Lexend", sans-serif;
+}
+
+.habitsPage {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  height: 100%;
+}
+
+.habitsList {
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.habit {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 46px;
+  border: 1px solid var(--gray);
+  border-radius: 8px;
+  padding: 0 16px;
+  background-color: rgba(255, 255, 255, 0.02);
+  transition: all 0.2s ease;
+}
+
+.habit:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+  border-color: var(--info-blue);
+}
+
+.habit p {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 400;
+  color: var(--white);
+  flex: 1;
+}
+
+.habit > div {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.habit input[type="checkbox"] {
+  width: 20px;
+  margin-right: 40px;
+  height: 20px;
+  accent-color: var(--info-blue);
+  cursor: pointer;
+  border-radius: 50%;
+  appearance: none;
+  border: 2px solid var(--gray);
+  background-color: transparent;
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+.habit input[type="checkbox"]:checked {
+  background-color: var(--info-blue);
+  border-color: var(--info-blue);
+}
+
+.habit input[type="checkbox"]:checked::after {
+  content: '✓';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: white;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.habit input[type="checkbox"]:hover {
+  border-color: var(--info-blue);
+  transform: scale(1.1);
+}
+
+.habit svg {
+  width: 20px;
+  height: 20px;
+  color: var(--gray);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.habit svg:hover {
+  color: #ff4757;
+  transform: scale(1.1);
+}
+
+.habitsContainer {
+  padding: 20px;
+  width: 60%;
+  height: 100%;
+  border-right: 1px solid var(--gray);
+  display: flex;
+  flex-direction: column;
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  font-weight: 600;
+  font-size: 24px;
+  color: var(--white);
+  padding: 20px;
+}
+
+.header h1 {
+  margin: 0;
+  margin-bottom: 8px;
+}
+
+.date {
+  font-size: 16px;
+  font-weight: 400;
+  color: var(--gray);
+  opacity: 0.8;
+}
+
+.input {
+  display: flex;
+  width: 100%;
+  flex-direction: row;
+  align-items: center;
+  margin-top: 20px;
+  border: 1px solid var(--gray);
+  border-radius: 8px;
+  height: 46px;
+  padding: 0 16px;
+  background-color: rgba(255, 255, 255, 0.02);
+  transition: all 0.2s ease;
+}
+
+.input:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+  border-color: var(--info-blue);
+}
+
+.input:focus-within {
+  background-color: rgba(255, 255, 255, 0.05);
+  border-color: var(--info-blue);
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+}
+
+.input input {
+  width: 100%;
+  height: 100%;
+  background-color: transparent;
+  border: none;
+  outline: none;
+  color: var(--white);
+  font-size: 16px;
+}
+
+.input input::placeholder {
+  color: var(--gray);
+  opacity: 0.7;
+}
+
+
+.input svg {
+  height: 32px;
+  fill: var(--gray);
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.input svg:hover {
+  fill: var(--info-blue);
+  transition: 0.2s;
+  transform: scale(1.2);
+}

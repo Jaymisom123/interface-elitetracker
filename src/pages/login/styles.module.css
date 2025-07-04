@@ -1,0 +1,97 @@
+.container {
+  background-color: var(--black-blue);
+  height: 100vh;
+  width: 100vw;
+  color: var(--white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: "Lexend", sans-serif;
+}
+
+.loginBox {
+  background-color: var(--dark-blue);
+  width: 400px;
+  min-height: 280px;
+  border-radius: 12px;
+  border: 1px solid rgba(71, 85, 105, 0.2);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2.5rem 2rem;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+.title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 2rem;
+  color: var(--white);
+  text-align: center;
+}
+
+.terms {
+  font-size: 0.8rem;
+  color: var(--white);
+  line-height: 1.5;
+  text-align: center;
+  max-width: 320px;
+}
+
+.terms a {
+  color: var(--info-blue);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.terms a:hover {
+  color: var(--info-blue-hover);
+  text-decoration: underline;
+}
+
+.loginButtons {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+}
+
+.testLoginButton {
+  background-color: var(--info-blue);
+  width: 100%;
+  height: 48px;
+  border-radius: 8px;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.testLoginButton:hover {
+  background-color: var(--info-blue-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 10px 20px rgba(37, 99, 235, 0.2);
+}
+
+/* Responsividade */
+@media (max-width: 480px) {
+  .loginBox {
+    width: 90%;
+    max-width: 350px;
+    padding: 2rem 1.5rem;
+  }
+
+  .title {
+    font-size: 1.25rem;
+  }
+
+  .terms {
+    font-size: 0.75rem;
+  }
+}
