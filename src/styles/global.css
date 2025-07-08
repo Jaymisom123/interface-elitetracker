@@ -1,4 +1,5 @@
 @import url("https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&display=swap");
+
 :root {
   --black-blue: #001e2b;
   --dark-blue: #001e2b;
@@ -8,6 +9,19 @@
   --gray: #828282;
   --text-secondary: #000000;
   --black-dark: #05141c;
+  
+  /* Cores de status */
+  --success: #10b981;
+  --success-hover: #059669;
+  --warning: #f59e0b;
+  --warning-hover: #d97706;
+  --error: #ef4444;
+  --error-hover: #dc2626;
+  
+  /* Cores neutras */
+  --gray-light: #9ca3af;
+  --gray-dark: #4b5563;
+  --gray-darker: #374151;
 }
 
 * {
@@ -18,8 +32,14 @@
   font-family: "Lexend", sans-serif;
 }
 
+html, body, #root {
+  min-height: 100vh;
+  width: 100%;
+  overflow-x: hidden;
+  background-color: var(--black-blue);
+}
+
 body {
-  font-family: "Lexend", sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -42,6 +62,6 @@ textarea {
 }
 
 :focus {
-  outline: 2px solid #2563eb;
+  outline: 2px solid var(--info-blue);
   outline-offset: 2px;
 }

@@ -1,109 +1,99 @@
-import axios from 'axios'
-import { Check, PaperPlaneRight, Trash } from 'phosphor-react'
+import { Check, Clock, ListChecks, PaperPlaneRight, Trash } from 'phosphor-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { Sidbar } from '../../components/Sidbar'
+import { Header, Sidbar, StatBadge } from '../../components'
 import { useAuth } from '../../contexts/AuthContext'
-import {
-  habitEntriesService,
-  habitsService,
-  type Habit,
-} from '../../services/firestore'
+import api from '../../services/api'
+import { formatDateToYMD, getTodayISO, getTodayYMD, isToday } from '../../utils/dateUtils'
 import styles from './styles.module.css'
+
+interface Habit {
+  _id: string
+  name: string
+  userId: string
+  completedDates: string[]
+  createdAt: string
+  updatedAt: string
+}
 
 function Habits() {
   const [habits, setHabits] = useState<Habit[]>([])
   const [newHabitName, setNewHabitName] = useState('')
   const [isLoading, setIsLoading] = useState(true)
   const [isAddingHabit, setIsAddingHabit] = useState(false)
-  const [_completedHabits, setCompletedHabits] = useState<Set<string>>(
-    new Set(),
-  )
+  const [completedHabits, setCompletedHabits] = useState<Set<string>>(new Set())
   const [bearerToken, setBearerToken] = useState<string>('')
   const [showCopyMsg, setShowCopyMsg] = useState(false)
 
   const { user } = useAuth()
-  const today = new Date().toISOString().split('T')[0] // YYYY-MM-DD
+  const today = getTodayYMD()
   const inputRef = useRef<HTMLInputElement>(null)
 
-  // Lista de hábitos estáticos
-  const staticHabits = [
-    'Beber água',
-    'Exercitar-se',
-    'Ler um livro',
-    'Meditar',
-    'Estudar programação',
-    'Dormir cedo',
-  ]
-
-  const [checkedHabits, setCheckedHabits] = useState<boolean[]>(
-    Array(staticHabits.length).fill(false),
-  )
-
-  const handleToggleStaticHabit = (idx: number) => {
-    setCheckedHabits((prev) => {
-      const updated = [...prev]
-      updated[idx] = !updated[idx]
-      return updated
-    })
-  }
-
-  // Carregar completions de hoje
-  const _loadTodayCompletions = useCallback(
-    async (habitsData: Habit[]) => {
-      if (!user || habitsData.length === 0) return
-
-      try {
-        const entries = await habitEntriesService.getByUserAndDateRange(
-          user.uid,
-          today,
-          today,
-        )
-        const completed = new Set(
-          entries
-            .filter((entry) => entry.completed)
-            .map((entry) => entry.habitId),
-        )
-        setCompletedHabits(completed)
-      } catch (error) {
-        console.error('Erro ao carregar completions:', error)
+  // Função auxiliar para sincronizar hábitos completados
+  const syncCompletedHabits = useCallback((habitsData: Habit[]) => {
+    console.log('=== SINCRONIZANDO HÁBITOS ===')
+    console.log('Data de hoje (frontend):', today)
+    
+    const completedToday = new Set<string>()
+    habitsData.forEach((habit: Habit) => {
+      console.log(`\nAnalisando hábito: "${habit.name}"`)
+      console.log('Datas completadas:', habit.completedDates)
+      
+      if (habit.completedDates) {
+        // Verificar se alguma data completada corresponde a hoje
+        const isCompletedToday = habit.completedDates.some((dateString: string) => {
+          const completedToday = isToday(dateString)
+          console.log(`  Comparando: ${formatDateToYMD(dateString)} === ${today} = ${completedToday}`)
+          return completedToday
+        })
+        
+        if (isCompletedToday) {
+          completedToday.add(habit._id)
+          console.log(`✅ Hábito "${habit.name}" está marcado como completo hoje`)
+        } else {
+          console.log(`❌ Hábito "${habit.name}" NÃO está completo hoje`)
+        }
       }
-    },
-    [user, today],
-  )
+    })
+    console.log(`\n🎯 Total de hábitos completados hoje: ${completedToday.size}`)
+    console.log('IDs dos hábitos completados:', Array.from(completedToday))
+    setCompletedHabits(completedToday)
+  }, [today])
+
+  useEffect(() => {
+    if (user) {
+      user
+        .getIdToken()
+        .then((token) => {
+          setBearerToken(token)
+        })
+        .catch((error) => {
+          console.error('Erro ao gerar token:', error)
+        })
+    }
+  }, [user])
 
   // Carregar hábitos do backend (MongoDB)
   useEffect(() => {
-    if (!user) return
+    if (!user || !bearerToken) return
+
     setIsLoading(true)
-    axios
-      .get('/api/habits', {
-        headers: { Authorization: `Bearer ${bearerToken}` },
-      })
+    api
+      .get('/api/v1/habits')
       .then((response) => {
-        setHabits(response.data)
+        const habitsData = Array.isArray(response.data) ? response.data : []
+        setHabits(habitsData)
+        
+        // Sincronizar hábitos completados hoje
+        syncCompletedHabits(habitsData)
+        
         setIsLoading(false)
       })
       .catch((error) => {
         console.error('Erro ao buscar hábitos do backend:', error)
+        setHabits([])
         setIsLoading(false)
       })
-  }, [user, bearerToken])
-
-  useEffect(() => {
-    // Carregar hábitos estáticos inicialmente
-    setHabits((prev) => [...prev, ...staticHabits])
-    console.log('Hábitos após adição dos estáticos:', [...staticHabits])
-    console.log('Estado atual dos hábitos:', habits)
-  }, [habits])
-
-  useEffect(() => {
-    if (user) {
-      user.getIdToken().then((token) => {
-        setBearerToken(token)
-        console.log('Seu Bearer Token:', token)
-      })
-    }
-  }, [user])
+  }, [user, bearerToken, today, syncCompletedHabits])
 
   // Adicionar novo hábito
   const handleAddHabit = async (e: React.FormEvent) => {
@@ -115,46 +105,89 @@ function Habits() {
     const habitName = newHabitName.trim()
 
     try {
-      await habitsService.create({
-        userId: user.uid,
-        name: habitName,
-        color: '#3b82f6', // Cor padrão azul
-      })
+      await api.post(
+        '/api/v1/habits',
+        {
+          name: habitName,
+        },
+      )
 
-      // Limpar o input imediatamente após sucesso
       setNewHabitName('')
       console.log(`Hábito "${habitName}" adicionado com sucesso!`)
 
-      // Focar no input para adicionar outro hábito
+      // Recarregar lista de hábitos
+      const response = await api.get('/api/v1/habits')
+      const habitsData = Array.isArray(response.data) ? response.data : []
+      setHabits(habitsData)
+
+      // Sincronizar hábitos completados após adicionar novo hábito
+      syncCompletedHabits(habitsData)
+
       setTimeout(() => {
         inputRef.current?.focus()
       }, 100)
     } catch (error) {
       console.error('Erro ao adicionar hábito:', error)
       alert('Erro ao adicionar hábito. Tente novamente.')
-      // Manter o texto no input se houve erro para o usuário tentar novamente
     } finally {
       setIsAddingHabit(false)
     }
   }
 
   // Toggle completion de hábito
-  const _handleToggleHabit = async (habitId: string) => {
+  const handleToggleHabit = async (habitId: string) => {
     if (!user) return
 
     try {
-      await habitEntriesService.toggle(habitId, user.uid, today)
+      const response = await api.patch(
+        `/api/v1/habits/${habitId}/toggle`,
+        {
+          date: today,
+        },
+      )
 
-      // Atualizar estado local
-      setCompletedHabits((prev) => {
-        const newSet = new Set(prev)
-        if (newSet.has(habitId)) {
-          newSet.delete(habitId)
-        } else {
-          newSet.add(habitId)
-        }
-        return newSet
-      })
+      // Atualizar estado local baseado na resposta do backend
+      if (response.data && response.data.success) {
+        // Atualizar o hábito específico na lista
+        setHabits((prevHabits) => 
+          prevHabits.map((habit) => {
+            if (habit._id === habitId) {
+              const updatedCompletedDates = [...(habit.completedDates || [])]
+              
+              // Verificar se hoje já está na lista usando Day.js
+              const todayIndex = updatedCompletedDates.findIndex((dateString: string) => 
+                isToday(dateString)
+              )
+              
+              if (todayIndex > -1) {
+                // Remover data se já estava completo
+                updatedCompletedDates.splice(todayIndex, 1)
+              } else {
+                // Adicionar data de hoje no formato ISO
+                const todayISO = getTodayISO()
+                updatedCompletedDates.push(todayISO)
+              }
+              
+              return {
+                ...habit,
+                completedDates: updatedCompletedDates
+              }
+            }
+            return habit
+          })
+        )
+
+        // Atualizar estado de hábitos completados
+        setCompletedHabits((prev) => {
+          const newSet = new Set(prev)
+          if (newSet.has(habitId)) {
+            newSet.delete(habitId)
+          } else {
+            newSet.add(habitId)
+          }
+          return newSet
+        })
+      }
     } catch (error) {
       console.error('Erro ao atualizar hábito:', error)
       alert('Erro ao atualizar hábito. Tente novamente.')
@@ -162,29 +195,20 @@ function Habits() {
   }
 
   // Deletar hábito
-  const _handleDeleteHabit = async (habitId: string, habitName: string) => {
+  const handleDeleteHabit = async (habitId: string, habitName: string) => {
     if (!confirm(`Tem certeza que deseja deletar o hábito "${habitName}"?`)) {
       return
     }
 
     try {
-      await habitsService.delete(habitId)
+      await api.delete(`/api/v1/habits/${habitId}`)
+
       console.log('Hábito deletado com sucesso!')
+      setHabits((prev) => prev.filter((habit) => habit._id !== habitId))
     } catch (error) {
       console.error('Erro ao deletar hábito:', error)
       alert('Erro ao deletar hábito. Tente novamente.')
     }
-  }
-
-  // Formatar data
-  const formatDate = () => {
-    const date = new Date()
-    return date.toLocaleDateString('pt-BR', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    })
   }
 
   const handleCopyToken = () => {
@@ -269,10 +293,32 @@ function Habits() {
           </div>
         )}
         <div className={styles.habitsContainer}>
-          <header className={styles.header}>
-            <h1>Hábitos Diários</h1>
-            <span className={styles.date}>{formatDate()}</span>
-          </header>
+          <Header 
+            title="Hábitos Diários" 
+            subtitle={`${habits.length} hábito${habits.length !== 1 ? 's' : ''} cadastrado${habits.length !== 1 ? 's' : ''}`}
+            actions={
+              <div className={styles.statsContainer}>
+                <StatBadge 
+                  icon={ListChecks}
+                  label="total"
+                  count={habits.length}
+                  variant="total"
+                />
+                <StatBadge 
+                  icon={Check}
+                  label="completos"
+                  count={Array.from(completedHabits).length}
+                  variant="completed"
+                />
+                <StatBadge 
+                  icon={Clock}
+                  label="pendentes"
+                  count={habits.length - Array.from(completedHabits).length}
+                  variant="pending"
+                />
+              </div>
+            }
+          />
 
           <form onSubmit={handleAddHabit} className={styles.input}>
             <input
@@ -312,54 +358,71 @@ function Habits() {
           </form>
 
           <div className={styles.habitsList}>
-            {staticHabits.map((habit, idx) => (
-              <div key={habit} className={styles.habit}>
-                <p>{habit}</p>
-                <div>
-                  <button
-                    type='button'
-                    onClick={() => handleToggleStaticHabit(idx)}
-                    style={{
-                      background: checkedHabits[idx]
-                        ? '#10b981'
-                        : 'transparent',
-                      border: `2px solid ${checkedHabits[idx] ? '#10b981' : '#6b7280'}`,
-                      borderRadius: '50%',
-                      width: '28px',
-                      height: '28px',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      transition: 'all 0.2s ease',
-                      marginRight: '8px',
-                    }}
-                    title={
-                      checkedHabits[idx] ? 'Desmarcar' : 'Marcar como concluído'
-                    }
-                  >
-                    {checkedHabits[idx] && (
-                      <Check size={18} color='#fff' weight='bold' />
-                    )}
-                  </button>
-                  <button
-                    type='button'
-                    style={{
-                      background: 'none',
-                      border: 'none',
-                      cursor: 'pointer',
-                      color: '#ef4444',
-                      padding: '4px',
-                      borderRadius: '4px',
-                      transition: 'all 0.2s ease',
-                    }}
-                    title={`Deletar "${habit}"`}
-                  >
-                    <Trash size={18} />
-                  </button>
+            {Array.isArray(habits) && habits.length > 0 ? (
+              habits.map((habit) => (
+                <div key={habit._id} className={styles.habit}>
+                  <p>{habit.name}</p>
+                  <div>
+                    <button
+                      type='button'
+                      onClick={() => handleToggleHabit(habit._id)}
+                      style={{
+                        background: completedHabits.has(habit._id)
+                          ? '#10b981'
+                          : 'transparent',
+                        border: `2px solid ${completedHabits.has(habit._id) ? '#10b981' : '#6b7280'}`,
+                        borderRadius: '50%',
+                        width: '28px',
+                        height: '28px',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        transition: 'all 0.2s ease',
+                        marginRight: '8px',
+                      }}
+                      title={
+                        completedHabits.has(habit._id)
+                          ? 'Desmarcar'
+                          : 'Marcar como concluído'
+                      }
+                    >
+                      {completedHabits.has(habit._id) && (
+                        <Check size={18} color='#fff' weight='bold' />
+                      )}
+                    </button>
+                    <button
+                      type='button'
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        cursor: 'pointer',
+                        color: '#ef4444',
+                        padding: '4px',
+                        borderRadius: '4px',
+                        transition: 'all 0.2s ease',
+                      }}
+                      title={`Deletar "${habit.name}"`}
+                      onClick={() => handleDeleteHabit(habit._id, habit.name)}
+                    >
+                      <Trash size={18} />
+                    </button>
+                  </div>
                 </div>
+              ))
+            ) : (
+              <div
+                style={{
+                  textAlign: 'center',
+                  padding: '20px',
+                  color: '#6b7280',
+                }}
+              >
+                {isLoading
+                  ? 'Carregando hábitos...'
+                  : 'Nenhum hábito encontrado. Adicione um novo hábito acima.'}
               </div>
-            ))}
+            )}
           </div>
         </div>
       </div>

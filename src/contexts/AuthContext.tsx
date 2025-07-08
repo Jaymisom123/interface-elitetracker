@@ -1,10 +1,10 @@
 import {
-  createUserWithEmailAndPassword,
-  onAuthStateChanged,
-  signInWithEmailAndPassword,
-  signOut,
-  type User,
-  updateProfile,
+    createUserWithEmailAndPassword,
+    onAuthStateChanged,
+    signInWithEmailAndPassword,
+    signOut,
+    updateProfile,
+    type User,
 } from 'firebase/auth'
 import type React from 'react'
 import { createContext, useContext, useEffect, useState } from 'react'
@@ -41,8 +41,26 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setUser(user)
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      console.log('Auth state changed:', user ? 'User logged in' : 'User logged out')
+      
+      if (user) {
+        try {
+          // Garantir que o token está atualizado
+          const idToken = await user.getIdToken(true)
+          localStorage.setItem('jwt_token', idToken)
+          setUser(user)
+        } catch (error) {
+          console.error('Erro ao obter token:', error)
+          localStorage.removeItem('jwt_token')
+          setUser(null)
+        }
+      } else {
+        // Usuário deslogado
+        localStorage.removeItem('jwt_token')
+        setUser(null)
+      }
+      
       setLoading(false)
     })
 

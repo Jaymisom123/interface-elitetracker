@@ -1,11 +1,13 @@
 import { ListChecks, SignOut, Timer } from 'phosphor-react'
-import { useState } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
+import { ROUTES } from '../../routes/paths'
 import styles from './styles.module.css'
 
 export function Sidbar() {
   const { user, logout } = useAuth()
-  const [activeMenu, setActiveMenu] = useState('habits')
+  const navigate = useNavigate()
+  const location = useLocation()
 
   const handleLogout = async () => {
     try {
@@ -17,9 +19,25 @@ export function Sidbar() {
   }
 
   const menuItems = [
-    { icon: ListChecks, label: 'Hábitos', key: 'habits' },
-    { icon: Timer, label: 'Cronômetro', key: 'timer' },
+    { 
+      icon: ListChecks, 
+      label: 'Hábitos', 
+      key: 'habits', 
+      route: ROUTES.HABITS 
+    },
+    { 
+      icon: Timer, 
+      label: 'Tempo de Foco', 
+      key: 'focus', 
+      route: ROUTES.FOCUS 
+    },
   ]
+
+  // Determinar o item ativo com base na rota atual
+  const getActiveMenuItem = () => {
+    const activeItem = menuItems.find(item => item.route === location.pathname)
+    return activeItem ? activeItem.key : ''
+  }
 
   // Fallback para avatar se não tiver foto
   const getAvatarUrl = () => {
@@ -65,8 +83,10 @@ export function Sidbar() {
         {menuItems.map((item) => (
           <button
             key={item.key}
-            className={`${styles.menuItem} ${activeMenu === item.key ? styles.active : ''}`}
-            onClick={() => setActiveMenu(item.key)}
+            className={`${styles.menuItem} ${getActiveMenuItem() === item.key ? styles.active : ''}`}
+            onClick={() => {
+              navigate(item.route)
+            }}
             type='button'
             title={item.label}
           >

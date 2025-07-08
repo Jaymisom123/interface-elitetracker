@@ -1,0 +1,280 @@
+.container {
+  background-color: var(--black-blue);
+  width: 100vw;
+  min-height: 100vh; 
+  color: var(--white);
+  font-family: "Lexend", sans-serif;
+}
+
+.focusPage {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  height: 100vh;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  width: 100%;
+  max-width: 900px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.headerTitle {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.headerTitle h1 {
+  font-size: 24px;
+  font-weight: bold;
+  color: var(--white);
+  margin: 0;
+}
+
+.headerTitle span {
+  font-size: 14px;
+  color: var(--gray);
+  opacity: 0.7;
+}
+
+.timerContainer {
+  padding: 20px;
+  width: 60%;
+  height: 100%;
+  border-right: 1px solid var(--gray);
+  display: flex;
+  flex-direction: column;
+}
+
+.timerControls {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  gap: 16px;
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.inputGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 450px;
+}
+
+.inputGroup label {
+  color: var(--text-secondary);
+  font-size: 14px;
+  margin-left: 4px;
+}
+
+.input {
+  display: flex;
+  width: 100%;
+  flex-direction: row;
+  align-items: center;
+  border: 1px solid var(--gray);
+  border-radius: 8px;
+  height: 46px;
+  padding: 0 16px;
+  background-color: rgba(255, 255, 255, 0.02);
+  transition: all 0.2s ease;
+}
+
+.input:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+  border-color: var(--info-blue);
+}
+
+.input:focus-within {
+  background-color: rgba(255, 255, 255, 0.05);
+  border-color: var(--info-blue);
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+}
+
+.input svg {
+  height: 24px;
+  fill: var(--gray);
+  margin-right: 10px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.input svg:hover {
+  fill: var(--info-blue);
+}
+
+.input input {
+  flex-grow: 1;
+  background-color: transparent;
+  border: none;
+  outline: none;
+  color: var(--white);
+  font-size: 16px;
+  padding: 0;
+}
+
+.input input::placeholder {
+  color: var(--gray);
+  opacity: 0.7;
+}
+
+.input input:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.inputGroup .input {
+  margin-top: 0;
+}
+
+.inputGroup .input input {
+  width: 100%;
+  height: 46px;
+  padding: 0 16px;
+}
+
+.actionButtons {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+}
+
+.startButton, 
+.stopButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.startButton {
+  background-color: #00B37E;
+  color: #FFFFFF;
+}
+
+.startButton:hover {
+  background-color: #00875F;
+}
+
+.stopButton {
+  background-color: #F75A68;
+  color: #FFFFFF;
+}
+
+.stopButton:hover {
+  background-color: #AA2834;
+}
+
+.metricsSection {
+  margin-top: 2rem;
+  background: #29292E;
+  border-radius: 8px;
+  padding: 1.5rem;
+}
+
+.metricsGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+
+.metricCard {
+  background: #323238;
+  border-radius: 6px;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.metricCard h4 {
+  margin: 0.5rem 0;
+  color: #7C7C8A;
+  font-size: 0.875rem;
+}
+
+.metricCard p {
+  font-size: 1.25rem;
+  font-weight: bold;
+  color: #E1E1E6;
+  margin: 0;
+}
+
+.sessionsHistory {
+  margin-top: 2rem;
+  background: #29292E;
+  border-radius: 8px;
+  padding: 1.5rem;
+}
+
+.sessionsHistory h3 {
+  margin-bottom: 1rem;
+  color: #E1E1E6;
+}
+
+.sessionsHistory ul {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+.sessionsHistory li {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid #323238;
+}
+
+.sessionsHistory li:last-child {
+  border-bottom: none;
+}
+
+.timerCircle {
+  width: 280px;
+  height: 280px;
+  border-radius: 50%;
+  border: 16px solid #29292E;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  background: transparent;
+  margin: 20px auto;
+}
+
+.timeDisplay {
+  font-size: 4rem;
+  font-weight: bold;
+  color: #E1E1E6;
+}
+
+@media (max-width: 768px) {
+  .timerCircle {
+    width: 300px;
+    height: 300px;
+  }
+
+  .timeDisplay {
+    font-size: 4rem;
+  }
+
+  .metricsGrid {
+    grid-template-columns: 1fr;
+  }
+}
+

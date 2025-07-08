@@ -2,11 +2,12 @@
 export const ROUTES = {
   HOME: '/',
   LOGIN: '/login',
+  AUTH: '/auth',
   HABITS: '/habits',
   PROFILE: '/profile',
   SETTINGS: '/settings',
   PROJECTS: '/projects',
-  // Adicione novas rotas aqui conforme necessário
+  FOCUS: '/focus',
 } as const
 
 // Tipo para autocompletar as rotas
