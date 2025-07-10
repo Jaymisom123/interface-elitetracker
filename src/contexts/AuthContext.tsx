@@ -49,7 +49,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           // Garantir que o token está atualizado
           const idToken = await user.getIdToken(true)
           localStorage.setItem('jwt_token', idToken)
-          setUser(user)
+      setUser(user)
         } catch (error) {
           console.error('Erro ao obter token:', error)
           localStorage.removeItem('jwt_token')

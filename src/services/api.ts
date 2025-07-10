@@ -3,7 +3,7 @@ import dayjs from 'dayjs'
 
 // Criar instância do Axios com URL base
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL
+  baseURL: import.meta.env.VITE_API_BASE_URL
 })
 
 // Adicionar interceptor para incluir token em todas as requisições
@@ -49,7 +49,8 @@ export const focusTimeService = {
   // Iniciar sessão de foco
   async startFocusSession(timeFrom: Date) {
     try {
-      const response = await api.post('/focus-time', { timeFrom })
+      // Enviar timeFrom e timeTo iguais ao iniciar (será atualizado ao finalizar)
+      const response = await api.post('/focus-time', { timeFrom, timeTo: timeFrom })
       return response.data
     } catch (error) {
       console.error('Erro ao iniciar sessão de foco:', error)
@@ -71,7 +72,7 @@ export const focusTimeService = {
   // Buscar métricas de tempo de foco por mês
   async getFocusTimeMetrics(date: Date) {
     try {
-      const response = await api.get('/focus-time/metrics', { 
+      const response = await api.get('/focus-time/metrics/month', { 
         params: { date: dayjs(date).toISOString() } 
       })
       return response.data.data
@@ -93,4 +94,4 @@ export const focusTimeService = {
   }
 }
 
-export default api
+export default api;

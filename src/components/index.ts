@@ -1,6 +1,7 @@
 // Exportações dos componentes
 export { default as Button } from './Button'
 export { default as Header } from './Header'
+export { Info } from './Info'
 export { Sidbar } from './Sidbar'
 export { default as StatBadge } from './StatBadge'
 

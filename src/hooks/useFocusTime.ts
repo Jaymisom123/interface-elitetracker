@@ -31,21 +31,10 @@ export const useFocusTime = () => {
   const [error, setError] = useState<string | null>(null)
 
   const startFocusSession = useCallback(async () => {
-    try {
-      setIsLoading(true)
-      const timeFrom = new Date()
-      const response = await focusTimeService.startFocusSession(timeFrom)
-      
-      setCurrentSession({
-        timeFrom,
-      })
-      setError(null)
-    } catch (err) {
-      setError('Erro ao iniciar sessão de foco')
-      console.error(err)
-    } finally {
-      setIsLoading(false)
-    }
+    // Apenas registra o início localmente, sem enviar para o backend
+    const timeFrom = new Date()
+    setCurrentSession({ timeFrom })
+    setError(null)
   }, [])
 
   const endFocusSession = useCallback(async () => {
@@ -54,6 +43,7 @@ export const useFocusTime = () => {
     try {
       setIsLoading(true)
       const timeTo = new Date()
+      // Agora sim, envia para o backend ao finalizar
       const response = await focusTimeService.endFocusSession(
         currentSession.timeFrom, 
         timeTo

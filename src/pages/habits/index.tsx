@@ -1,9 +1,13 @@
-import { Check, Clock, ListChecks, PaperPlaneRight, Trash } from 'phosphor-react'
+import { Indicator } from '@mantine/core'
+import { Calendar } from '@mantine/dates'
+import clsx from 'clsx'
+import dayjs from 'dayjs'
+import { Check, PaperPlaneRight, Trash } from 'phosphor-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { Header, Sidbar, StatBadge } from '../../components'
+import { Header, Info, Sidbar } from '../../components'
 import { useAuth } from '../../contexts/AuthContext'
 import api from '../../services/api'
-import { formatDateToYMD, getTodayISO, getTodayYMD, isToday } from '../../utils/dateUtils'
+import { getTodayISO, getTodayYMD, isToday } from '../../utils/dateUtils'
 import styles from './styles.module.css'
 
 interface Habit {
@@ -14,6 +18,11 @@ interface Habit {
   createdAt: string
   updatedAt: string
 }
+type Metrics = {
+ _id: string
+ name: string
+ completedDates: string[]
+}
 
 function Habits() {
   const [habits, setHabits] = useState<Habit[]>([])
@@ -23,39 +32,99 @@ function Habits() {
   const [completedHabits, setCompletedHabits] = useState<Set<string>>(new Set())
   const [bearerToken, setBearerToken] = useState<string>('')
   const [showCopyMsg, setShowCopyMsg] = useState(false)
-
+  const [metrics, setMetrics] = useState<Metrics>({}as Metrics)
+  const [selectHabit, setSelectHabit] = useState<Habit|null>(null)
   const { user } = useAuth()
   const today = getTodayYMD()
   const inputRef = useRef<HTMLInputElement>(null)
 
   // Função auxiliar para sincronizar hábitos completados
+  async function handleSelectHabit(habit: Habit) {
+    setSelectHabit(habit)
+  }
+
+  // Função para calcular porcentagem de conclusão do hábito
+  const calculateCompletionPercentage = (habit: Habit): number => {
+    
+    if (!habit.completedDates || habit.completedDates.length === 0) {
+      return 0
+    }
+
+    // Calcular dias desde a criação do hábito
+    const createdDate = new Date(habit.createdAt)
+    const today = new Date()
+    const diffTime = Math.abs(today.getTime() - createdDate.getTime())
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+    
+    if (diffDays === 0) return 0
+
+    const completedDays = habit.completedDates.length
+    const percentage = Math.round((completedDays / diffDays) * 100)
+    
+    return Math.min(percentage, 100) // Limitar a 100%
+  }
+
+  // Função para calcular a streak atual (sequência de dias consecutivos)
+  const calculateCurrentStreak = (habit: Habit): number => {
+    if (!habit.completedDates || habit.completedDates.length === 0) {
+      return 0
+    }
+
+    // Ordenar datas em ordem decrescente
+    const sortedDates = habit.completedDates
+      .map(date => new Date(date))
+      .sort((a, b) => b.getTime() - a.getTime())
+
+    let streak = 0
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+
+    // Verificar se hoje foi completado
+    const todayCompleted = sortedDates.some(date => {
+      const dateOnly = new Date(date)
+      dateOnly.setHours(0, 0, 0, 0)
+      return dateOnly.getTime() === today.getTime()
+    })
+
+    let checkDate = new Date(today)
+    if (!todayCompleted) {
+      // Se hoje não foi completado, começar verificando ontem
+      checkDate.setDate(checkDate.getDate() - 1)
+    }
+
+    // Contar dias consecutivos
+    for (const completedDate of sortedDates) {
+      const completedDateOnly = new Date(completedDate)
+      completedDateOnly.setHours(0, 0, 0, 0)
+      
+      if (completedDateOnly.getTime() === checkDate.getTime()) {
+        streak++
+        checkDate.setDate(checkDate.getDate() - 1)
+      } else {
+        break
+      }
+    }
+
+    return streak
+  }
+
   const syncCompletedHabits = useCallback((habitsData: Habit[]) => {
-    console.log('=== SINCRONIZANDO HÁBITOS ===')
-    console.log('Data de hoje (frontend):', today)
     
     const completedToday = new Set<string>()
     habitsData.forEach((habit: Habit) => {
-      console.log(`\nAnalisando hábito: "${habit.name}"`)
-      console.log('Datas completadas:', habit.completedDates)
       
       if (habit.completedDates) {
         // Verificar se alguma data completada corresponde a hoje
         const isCompletedToday = habit.completedDates.some((dateString: string) => {
           const completedToday = isToday(dateString)
-          console.log(`  Comparando: ${formatDateToYMD(dateString)} === ${today} = ${completedToday}`)
           return completedToday
         })
         
         if (isCompletedToday) {
           completedToday.add(habit._id)
-          console.log(`✅ Hábito "${habit.name}" está marcado como completo hoje`)
-        } else {
-          console.log(`❌ Hábito "${habit.name}" NÃO está completo hoje`)
         }
       }
     })
-    console.log(`\n🎯 Total de hábitos completados hoje: ${completedToday.size}`)
-    console.log('IDs dos hábitos completados:', Array.from(completedToday))
     setCompletedHabits(completedToday)
   }, [today])
 
@@ -81,6 +150,7 @@ function Habits() {
       .get('/api/v1/habits')
       .then((response) => {
         const habitsData = Array.isArray(response.data) ? response.data : []
+        
         setHabits(habitsData)
         
         // Sincronizar hábitos completados hoje
@@ -178,15 +248,15 @@ function Habits() {
         )
 
         // Atualizar estado de hábitos completados
-        setCompletedHabits((prev) => {
-          const newSet = new Set(prev)
-          if (newSet.has(habitId)) {
-            newSet.delete(habitId)
-          } else {
-            newSet.add(habitId)
-          }
-          return newSet
-        })
+      setCompletedHabits((prev) => {
+        const newSet = new Set(prev)
+        if (newSet.has(habitId)) {
+          newSet.delete(habitId)
+        } else {
+          newSet.add(habitId)
+        }
+        return newSet
+      })
       }
     } catch (error) {
       console.error('Erro ao atualizar hábito:', error)
@@ -205,6 +275,18 @@ function Habits() {
 
       console.log('Hábito deletado com sucesso!')
       setHabits((prev) => prev.filter((habit) => habit._id !== habitId))
+      
+      // Se o hábito deletado estava selecionado, limpar a seleção
+      if (selectHabit?._id === habitId) {
+        setSelectHabit(null)
+      }
+      
+      // Remover das completed habits se estava marcado
+      setCompletedHabits((prev) => {
+        const newSet = new Set(prev)
+        newSet.delete(habitId)
+        return newSet
+      })
     } catch (error) {
       console.error('Erro ao deletar hábito:', error)
       alert('Erro ao deletar hábito. Tente novamente.')
@@ -296,28 +378,6 @@ function Habits() {
           <Header 
             title="Hábitos Diários" 
             subtitle={`${habits.length} hábito${habits.length !== 1 ? 's' : ''} cadastrado${habits.length !== 1 ? 's' : ''}`}
-            actions={
-              <div className={styles.statsContainer}>
-                <StatBadge 
-                  icon={ListChecks}
-                  label="total"
-                  count={habits.length}
-                  variant="total"
-                />
-                <StatBadge 
-                  icon={Check}
-                  label="completos"
-                  count={Array.from(completedHabits).length}
-                  variant="completed"
-                />
-                <StatBadge 
-                  icon={Clock}
-                  label="pendentes"
-                  count={habits.length - Array.from(completedHabits).length}
-                  variant="pending"
-                />
-              </div>
-            }
           />
 
           <form onSubmit={handleAddHabit} className={styles.input}>
@@ -360,8 +420,8 @@ function Habits() {
           <div className={styles.habitsList}>
             {Array.isArray(habits) && habits.length > 0 ? (
               habits.map((habit) => (
-                <div key={habit._id} className={styles.habit}>
-                  <p>{habit.name}</p>
+                <div key={habit._id} className={clsx(styles.habit, selectHabit?._id === habit._id && styles.selectedHabit)}>
+                  <p onClick={() => handleSelectHabit(habit)}>{habit.name}</p>
                   <div>
                     <button
                       type='button'
@@ -425,6 +485,74 @@ function Habits() {
             )}
           </div>
         </div>
+
+        <div className={styles.metricsContainer}>
+          {selectHabit ? (
+            <>
+              <h2>{selectHabit.name}</h2>
+              <div className={styles.infoContainer}>
+                <Info 
+                  value={`${selectHabit.completedDates?.length || 0}`} 
+                  label="Dias concluídos" 
+                />
+                <Info 
+                  value={`${calculateCompletionPercentage(selectHabit)}%`} 
+                  label="Taxa de sucesso" 
+                />
+                <Info 
+                  value={`${calculateCurrentStreak(selectHabit)}`} 
+                  label="Sequência atual" 
+                />
+              </div>
+              <div className={styles.calendarContainer}>
+                <Calendar 
+                  getDayProps={(date) => {
+                    const isCompleted = selectHabit.completedDates?.some(completedDate =>
+                      dayjs(completedDate).isSame(dayjs(date), 'day')
+                    );
+                    return {
+                      disabled: isCompleted,
+                    };
+                  }}
+                  renderDay={(date) => {
+                    const isCompleted = selectHabit.completedDates?.some(completedDate =>
+                      dayjs(completedDate).isSame(dayjs(date), 'day')
+                    );
+                    return (
+                      <Indicator
+                        size={8}
+                        color="#10b981"
+                        offset={-2}
+                        disabled={!isCompleted}
+                      >
+                        <div>{dayjs(date).date()}</div>
+                      </Indicator>
+                    );
+                  }}
+                />
+              </div>
+            </>
+          ) : (
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                height: '100%',
+                color: '#6b7280',
+                textAlign: 'center',
+              }}
+            >
+              <h3 style={{ marginBottom: '16px', fontWeight: 500 }}>
+                Selecione um hábito
+              </h3>
+              <p style={{ fontSize: '14px', lineHeight: '1.5' }}>
+                Clique em um hábito da lista para ver suas métricas detalhadas
+              </p>
+            </div>
+          )}
+      </div>
       </div>
     </div>
   )
