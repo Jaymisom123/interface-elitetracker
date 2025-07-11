@@ -1,6 +1,13 @@
-import { ListChecks, Plus } from 'phosphor-react'
+import { Indicator } from '@mantine/core'
+import { Calendar } from '@mantine/dates'
+import dayjs from 'dayjs'
+import 'dayjs/locale/pt-br'
+import { Clock, ListChecks, Plus } from 'phosphor-react'
+
+// Configurar locale para português
+dayjs.locale('pt-br')
 import { useEffect, useRef, useState } from 'react'
-import { Header, Sidbar } from '../../components'
+import { Header, Info, Sidbar } from '../../components'
 import { useFocusTime } from '../../hooks'
 import styles from './styles.module.css'
 
@@ -13,7 +20,8 @@ function Focus() {
     endFocusSession,
     metrics,
     fetchFocusTimeMetrics,
-    sessions
+    sessions,
+    listFocusSessions
   } = useFocusTime()
 
   const [focusTime, setFocusTime] = useState(10)
@@ -25,7 +33,8 @@ function Focus() {
 
   useEffect(() => {
     fetchFocusTimeMetrics()
-  }, [fetchFocusTimeMetrics])
+    listFocusSessions()
+  }, [fetchFocusTimeMetrics, listFocusSessions])
 
   useEffect(() => {
     // Resetar tempo restante quando mudar o tempo de foco ou descanso
@@ -99,6 +108,9 @@ function Focus() {
     if (currentSession) {
       try {
         await endFocusSession()
+        // Recarregar métricas e sessões após finalizar
+        fetchFocusTimeMetrics()
+        listFocusSessions()
       } catch (error) {
         console.error('Erro ao finalizar sessão de foco:', error)
       }
@@ -261,7 +273,119 @@ function Focus() {
           </div>
 
           {renderActionButtons()}
+        </div> 
+        <div className={styles.estatistica}>
+          <div className={styles.metricsContainer}>
+            <h2>Estatísticas de Foco</h2>
+            
+            {/* Métricas principais do mês atual */}
+            <div className={styles.infoContainer}>
+              <Info 
+                value={`${metrics?.monthlyMetrics?.totalSessions || 0}`} 
+                label="Ciclos do mês" 
+              />
+              <Info 
+                value={`${Math.round((metrics?.monthlyMetrics?.totalMonthDuration || 0) / 60)}h`} 
+                label="Tempo total" 
+              />
+              <Info 
+                value={`${Math.round(metrics?.monthlyMetrics?.averageSessionDuration || 0)}min`} 
+                label="Média por sessão" 
+              />
+            </div>
+
+            {/* Sessões do dia atual */}
+            <div className={styles.todaySessions}>
+              <h3>{dayjs().format('D [de] MMMM')}</h3>
+              
+                             {/* Filtrar sessões de hoje */}
+               {(() => {
+                 let todaySessions = sessions?.filter(session => 
+                   dayjs(session.timeFrom).isSame(dayjs(), 'day')
+                 ) || []
+                 
+                 // Adicionar sessão atual se estiver em andamento hoje
+                 if (currentSession && dayjs(currentSession.timeFrom).isSame(dayjs(), 'day')) {
+                   todaySessions = [...todaySessions, currentSession]
+                 }
+                 
+                 // Ordenar sessões por horário
+                 todaySessions.sort((a, b) => 
+                   dayjs(a.timeFrom).valueOf() - dayjs(b.timeFrom).valueOf()
+                 )
+                
+                return todaySessions.length > 0 ? (
+                  <div className={styles.sessionsList}>
+                    {todaySessions.map((session, index) => (
+                                             <div key={index} className={styles.sessionItem}>
+                         <div className={styles.sessionIcon}>
+                           <Clock size={16} color="var(--info-blue)" />
+                         </div>
+                        <div className={styles.sessionInfo}>
+                          <span className={styles.sessionTime}>
+                            {dayjs(session.timeFrom).format('HH:mm')}
+                            {session.timeTo && ` - ${dayjs(session.timeTo).format('HH:mm')}`}
+                          </span>
+                          <span className={styles.sessionDuration}>
+                            {session.duration ? `${session.duration} minutos` : 'Em andamento'}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className={styles.noSessionsToday}>
+                    <p>Nenhuma sessão hoje</p>
+                  </div>
+                )
+              })()}
+            </div>
+
+            {/* Calendar com histórico de foco */}
+            <div className={styles.calendarContainer}>
+              <Calendar 
+                getDayProps={(date) => {
+                  const hasFocus = metrics?.dailyMetrics?.some(metric =>
+                    dayjs(metric.date).isSame(dayjs(date), 'day') && metric.sessionsCount > 0
+                  );
+                  return {
+                    disabled: false,
+                  };
+                }}
+                renderDay={(date) => {
+                  const dayMetric = metrics?.dailyMetrics?.find(metric =>
+                    dayjs(metric.date).isSame(dayjs(date), 'day')
+                  );
+                  const hasFocus = dayMetric && dayMetric.sessionsCount > 0;
+                  
+                  return (
+                    <Indicator
+                      size={8}
+                      color="#00B37E"
+                      offset={-2}
+                      disabled={!hasFocus}
+                    >
+                      <div style={{ 
+                        color: hasFocus ? '#00B37E' : 'inherit',
+                        fontWeight: hasFocus ? 'bold' : 'normal'
+                      }}>
+                        {dayjs(date).date()}
+                      </div>
+                    </Indicator>
+                  );
+                }}
+              />
+            </div>
+
+            {/* Mensagem quando não há dados */}
+            {(!metrics || (!metrics.monthlyMetrics?.totalSessions && (!sessions || sessions.length === 0))) && (
+              <div className={styles.emptyState}>
+                <p>Inicie sua primeira sessão de foco para ver suas estatísticas!</p>
+              </div>
+            )}
+          </div>
         </div>
+
         
        
       </div>

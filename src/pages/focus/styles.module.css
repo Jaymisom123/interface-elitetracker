@@ -1,9 +1,10 @@
 .container {
   background-color: var(--black-blue);
-  width: 100vw;
+  width: 100%;
   min-height: 100vh; 
   color: var(--white);
   font-family: "Lexend", sans-serif;
+  overflow-x: hidden;
 }
 
 .focusPage {
@@ -11,6 +12,7 @@
   flex-direction: row;
   width: 100%;
   height: 100vh;
+  overflow-x: hidden;
 }
 
 .header {
@@ -200,56 +202,75 @@
   gap: 1rem;
 }
 
-.metricCard {
-  background: #323238;
-  border-radius: 6px;
-  padding: 1rem;
+
+
+.todaySessions {
+  margin-bottom: 8px;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 8px;
+  padding: 8px;
+  border: 1px solid var(--gray);
+  max-height: 140px;
+  overflow-y: auto;
+}
+
+.todaySessions h3 {
+  margin: 0 0 4px 0;
+  color: var(--white);
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.sessionsList {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  text-align: center;
+  gap: 3px;
 }
 
-.metricCard h4 {
-  margin: 0.5rem 0;
-  color: #7C7C8A;
-  font-size: 0.875rem;
-}
-
-.metricCard p {
-  font-size: 1.25rem;
-  font-weight: bold;
-  color: #E1E1E6;
-  margin: 0;
-}
-
-.sessionsHistory {
-  margin-top: 2rem;
-  background: #29292E;
-  border-radius: 8px;
-  padding: 1.5rem;
-}
-
-.sessionsHistory h3 {
-  margin-bottom: 1rem;
-  color: #E1E1E6;
-}
-
-.sessionsHistory ul {
-  list-style-type: none;
-  padding: 0;
-  margin: 0;
-}
-
-.sessionsHistory li {
+.sessionItem {
   display: flex;
-  justify-content: space-between;
-  padding: 0.5rem 0;
-  border-bottom: 1px solid #323238;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.sessionsHistory li:last-child {
+.sessionItem:last-child {
   border-bottom: none;
+}
+
+.sessionIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+}
+
+.sessionInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+
+.sessionTime {
+  font-size: 11px;
+  color: var(--white);
+  font-weight: 500;
+}
+
+.sessionDuration {
+  font-size: 10px;
+  color: var(--gray);
+}
+
+.noSessionsToday {
+  text-align: center;
+  padding: 8px;
+  color: var(--gray);
+  font-size: 11px;
 }
 
 .timerCircle {
@@ -283,18 +304,395 @@
   color: #E1E1E6;
 }
 
+.estatistica {
+  width: 40%;
+  padding: 20px;
+  height: 100%;
+  overflow-y: hidden;
+}
+
+.metricsContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  height: 100%;
+  justify-content: space-between;
+}
+
+.metricsContainer h2 {
+  color: var(--white);
+  font-size: 16px;
+  font-weight: bold;
+  margin: 0;
+  text-align: center;
+  margin-bottom: 2px;
+}
+
+.metricsContainer h3 {
+  color: var(--white);
+  font-size: 16px;
+  font-weight: 600;
+  margin: 12px 0 8px 0;
+}
+
+.infoContainer {
+  display: flex;
+  justify-content: space-between;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+
+.calendarContainer {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 0;
+  margin-top: 5px;
+  flex: 1;
+  min-height: 0;
+}
+
+/* Estilos para o Calendar do Mantine */
+.calendarContainer :global(.mantine-Calendar-root) {
+  background: transparent;
+  border: none;
+}
+
+.calendarContainer :global(.mantine-Calendar-month) {
+  color: var(--white);
+}
+
+.calendarContainer :global(.mantine-Calendar-calendarHeader) {
+  color: var(--white);
+  margin-bottom: 12px;
+}
+
+.calendarContainer :global(.mantine-Calendar-calendarHeaderLevel) {
+  color: var(--white);
+  font-weight: 600;
+}
+
+.calendarContainer :global(.mantine-Calendar-calendarHeaderControl) {
+  color: var(--gray);
+  border: none;
+  background: transparent;
+}
+
+.calendarContainer :global(.mantine-Calendar-calendarHeaderControl:hover) {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--white);
+}
+
+.calendarContainer :global(.mantine-Calendar-weekday) {
+  color: var(--gray);
+  font-size: 12px;
+}
+
+.calendarContainer :global(.mantine-Calendar-day) {
+  color: var(--gray);
+  border: none;
+  background: transparent;
+  font-size: 14px;
+}
+
+.calendarContainer :global(.mantine-Calendar-day:hover) {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--white);
+}
+
+.calendarContainer :global(.mantine-Calendar-day[data-today="true"]) {
+  background: rgba(59, 130, 246, 0.2);
+  color: var(--info-blue);
+  font-weight: bold;
+}
+
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  text-align: center;
+  color: var(--gray);
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 8px;
+  border: 1px solid var(--gray);
+  margin-top: 20px;
+}
+
+.emptyState p {
+  font-size: 14px;
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* Responsividade para tablets */
+@media (max-width: 1024px) {
+  .timerContainer {
+    width: 65%;
+  }
+
+  .estatistica {
+    width: 35%;
+  }
+
+  .timerControls {
+    gap: 12px;
+  }
+
+  .inputGroup {
+    width: 100%;
+  }
+}
+
+/* Prevenir overflow horizontal em todos os dispositivos */
+* {
+  box-sizing: border-box;
+}
+
+/* Responsividade para mobile */
 @media (max-width: 768px) {
+  .focusPage {
+    flex-direction: column;
+    height: auto;
+  }
+
+  .timerContainer {
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid var(--gray);
+    padding: 16px;
+    min-height: auto;
+  }
+
+  .timerControls {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .inputGroup {
+    width: 100%;
+  }
+
+  .inputGroup label {
+    font-size: 15px;
+    margin-bottom: 8px;
+  }
+
+  .input {
+    height: 52px;
+    padding: 0 20px;
+    border-radius: 12px;
+  }
+
+  .input input {
+    font-size: 18px;
+  }
+
+  .input svg {
+    height: 20px;
+    margin-right: 12px;
+  }
+
   .timerCircle {
-    width: 300px;
-    height: 300px;
+    width: 240px;
+    height: 240px;
+    margin: 20px auto;
   }
 
   .timeDisplay {
-    font-size: 4rem;
+    font-size: 3rem;
   }
 
-  .metricsGrid {
-    grid-template-columns: 1fr;
+  .timerStatus {
+    font-size: 1rem;
+  }
+
+  .actionButtons {
+    flex-wrap: wrap;
+    gap: 12px;
+    justify-content: center;
+  }
+
+  .startButton, 
+  .startBreakButton,
+  .cancelButton {
+    min-width: 120px;
+    padding: 10px 20px;
+    font-size: 14px;
+  }
+
+  .estatistica {
+    width: 100%;
+    height: auto;
+    min-height: 400px;
+    padding: 16px;
+    overflow-y: auto;
+  }
+
+  .metricsContainer {
+    gap: 16px;
+  }
+
+  .metricsContainer h2 {
+    font-size: 20px;
+    margin-bottom: 8px;
+  }
+
+  .infoContainer {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  /* Ajustar os componentes Info para mobile */
+  .infoContainer :global(*) {
+    text-align: center;
+    min-width: auto;
+  }
+
+  .todaySessions {
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+
+  .todaySessions h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+  }
+
+  .sessionItem {
+    padding: 8px 0;
+    gap: 12px;
+  }
+
+  .sessionIcon {
+    width: 24px;
+    height: 24px;
+  }
+
+  .sessionTime {
+    font-size: 13px;
+  }
+
+  .sessionDuration {
+    font-size: 11px;
+  }
+
+  .calendarContainer {
+    padding: 16px 0;
+    margin-top: 8px;
+  }
+
+  .calendarContainer :global(.mantine-Calendar-day) {
+    font-size: 12px;
+  }
+
+  .emptyState {
+    padding: 24px 16px;
+    margin-top: 16px;
+  }
+
+  .emptyState p {
+    font-size: 15px;
+  }
+}
+
+/* Responsividade para mobile pequeno */
+@media (max-width: 480px) {
+  .timerContainer {
+    padding: 12px;
+  }
+
+  .timerCircle {
+    width: 200px;
+    height: 200px;
+    margin: 16px auto;
+  }
+
+  .timeDisplay {
+    font-size: 2.5rem;
+  }
+
+  .timerStatus {
+    font-size: 0.9rem;
+  }
+
+  .actionButtons {
+    gap: 8px;
+  }
+
+  .startButton, 
+  .startBreakButton,
+  .cancelButton {
+    min-width: 100px;
+    padding: 8px 16px;
+    font-size: 13px;
+  }
+
+  .estatistica {
+    padding: 12px;
+  }
+
+  .metricsContainer h2 {
+    font-size: 18px;
+  }
+
+  .todaySessions {
+    padding: 12px;
+  }
+
+  .todaySessions h3 {
+    font-size: 14px;
+  }
+
+  .sessionItem {
+    gap: 8px;
+  }
+
+  .sessionIcon {
+    width: 20px;
+    height: 20px;
+  }
+
+  .sessionTime {
+    font-size: 12px;
+  }
+
+  .sessionDuration {
+    font-size: 10px;
+  }
+
+  .calendarContainer {
+    padding: 12px 0;
+  }
+
+  .calendarContainer :global(.mantine-Calendar-root) {
+    max-width: 100%;
+    overflow-x: auto;
+  }
+
+  .calendarContainer :global(.mantine-Calendar-month) {
+    font-size: 12px;
+  }
+
+  .calendarContainer :global(.mantine-Calendar-day) {
+    font-size: 11px;
+    min-width: 32px;
+    min-height: 32px;
+  }
+
+  .calendarContainer :global(.mantine-Calendar-weekday) {
+    font-size: 10px;
+    padding: 4px;
+  }
+
+  .calendarContainer :global(.mantine-Calendar-calendarHeaderLevel) {
+    font-size: 14px;
+  }
+
+  .emptyState {
+    padding: 20px 12px;
   }
 }
 

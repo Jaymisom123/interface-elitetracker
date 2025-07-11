@@ -31,7 +31,6 @@ function Habits() {
   const [isAddingHabit, setIsAddingHabit] = useState(false)
   const [completedHabits, setCompletedHabits] = useState<Set<string>>(new Set())
   const [bearerToken, setBearerToken] = useState<string>('')
-  const [showCopyMsg, setShowCopyMsg] = useState(false)
   const [metrics, setMetrics] = useState<Metrics>({}as Metrics)
   const [selectHabit, setSelectHabit] = useState<Habit|null>(null)
   const { user } = useAuth()
@@ -126,7 +125,7 @@ function Habits() {
       }
     })
     setCompletedHabits(completedToday)
-  }, [today])
+    }, [today])
 
   useEffect(() => {
     if (user) {
@@ -183,7 +182,7 @@ function Habits() {
       )
 
       setNewHabitName('')
-      console.log(`Hábito "${habitName}" adicionado com sucesso!`)
+      // console.log(`Hábito "${habitName}" adicionado com sucesso!`)
 
       // Recarregar lista de hábitos
       const response = await api.get('/api/v1/habits')
@@ -273,7 +272,7 @@ function Habits() {
     try {
       await api.delete(`/api/v1/habits/${habitId}`)
 
-      console.log('Hábito deletado com sucesso!')
+      // console.log('Hábito deletado com sucesso!')
       setHabits((prev) => prev.filter((habit) => habit._id !== habitId))
       
       // Se o hábito deletado estava selecionado, limpar a seleção
@@ -293,13 +292,7 @@ function Habits() {
     }
   }
 
-  const handleCopyToken = () => {
-    if (bearerToken) {
-      navigator.clipboard.writeText(bearerToken)
-      setShowCopyMsg(true)
-      setTimeout(() => setShowCopyMsg(false), 2000)
-    }
-  }
+
 
   if (isLoading) {
     return (
@@ -326,54 +319,7 @@ function Habits() {
     <div className={styles.habitsPage}>
       <Sidbar />
       <div className={styles.container}>
-        {/* Botão para copiar o token */}
-        {user && bearerToken && (
-          <div
-            style={{
-              position: 'fixed',
-              top: 16,
-              right: 16,
-              zIndex: 9999,
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'flex-end',
-            }}
-          >
-            <button
-              onClick={handleCopyToken}
-              style={{
-                background: '#3b82f6',
-                color: '#fff',
-                border: 'none',
-                borderRadius: '8px',
-                padding: '8px 16px',
-                fontWeight: 600,
-                cursor: 'pointer',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
-                fontSize: '14px',
-              }}
-              title='Copiar Bearer Token'
-            >
-              Copiar Token
-            </button>
-            {showCopyMsg && (
-              <span
-                style={{
-                  marginTop: 6,
-                  background: '#10b981',
-                  color: '#fff',
-                  borderRadius: '6px',
-                  padding: '4px 10px',
-                  fontSize: '13px',
-                  fontWeight: 500,
-                  boxShadow: '0 1px 4px rgba(0,0,0,0.08)',
-                }}
-              >
-                Token copiado!
-              </span>
-            )}
-          </div>
-        )}
+
         <div className={styles.habitsContainer}>
           <Header 
             title="Hábitos Diários" 

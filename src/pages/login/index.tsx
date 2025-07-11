@@ -42,7 +42,6 @@ function Login() {
       const result = await signInWithPopup(auth, provider)
       
       if (result.user) {
-        console.log('Login com GitHub e Firebase realizado com sucesso!')
         // O redirecionamento será feito automaticamente pelo useEffect
         // quando o estado de autenticação mudar
       }
